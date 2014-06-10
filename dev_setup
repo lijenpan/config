@@ -1,0 +1,21 @@
+#!/bin/bash
+
+cd /var/www/trunk/v2/dashboard_project
+tmux new-session -d -s Dev
+tmux new-window -tDev:1 -n django
+tmux new-window -tDev:2 -n celery
+tmux new-window -tDev:3 -n tail
+tmux new-window -tDev:4 -n redis
+tmux new-window -tDev:5 -n flower
+tmux new-window -tDev:6 -n mongod
+tmux new-window -tDev:7 -n memcached
+
+tmux send-keys -tDev:1 'source ~/vm/site-env/bin/activate; sudo apachectl restart; python manage.py runserver' C-m
+tmux send-keys -tDev:2 'source ~/vm/site-env/bin/activate; python manage.py celery worker --loglevel=info --concurrency=4 -E --broker=redis://localhost:6379/0' C-m
+tmux send-keys -tDev:3 'tail -f /var/log/apache2/error_log' C-m
+tmux send-keys -tDev:4 '~/Downloads/redis-2.6.16/src/redis-server' C-m
+tmux send-keys -tDev:5 'source ~/vm/site-env/bin/activate; python manage.py celery flower --broker=redis://localhost:6379/0' C-m
+tmux send-keys -tDev:6 'mongod' C-m
+tmux send-keys -tDev:7 'memcached' C-m
+
+tmux attach-session -d -tDev
